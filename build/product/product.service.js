@@ -1,32 +1,30 @@
-import {Injectable} from '@nestjs/common';
-import {InjectModel} from "@nestjs/mongoose";
-import {Model} from "mongoose";
-import {InjectTwilio, TwilioClient} from "nestjs-twilio";
-import {ProductInterface} from "../interface/product.interface";
-import {ProductcategorieInterface} from "../interface/productcategorie.interface";
-import {CartInterface} from "../interface/cart.interface";
-import {CouponInterface} from "../interface/coupon.interface";
-import {OrderInterface} from "../interface/order.interface";
-import {UserInterface} from "../interface/user.interface";
-
-@Injectable()
-export class ProductService {
-    constructor(
-        @InjectModel('product')
-        private readonly productInterface: Model<ProductInterface>,
-        @InjectModel('product_categorie')
-        private readonly productcategorieInterface: Model<ProductcategorieInterface>,
-        @InjectModel('cart')
-        private readonly cartInterface: Model<CartInterface>,
-        @InjectModel('promo_code')
-        private readonly couponInterface: Model<CouponInterface>,
-        @InjectModel('order')
-        private readonly orderInterface: Model<OrderInterface>,
-        @InjectModel('user')
-        private readonly userInterface: Model<UserInterface>,
-    ) {
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProductService = void 0;
+const common_1 = require("@nestjs/common");
+const mongoose_1 = require("@nestjs/mongoose");
+const mongoose_2 = require("mongoose");
+let ProductService = class ProductService {
+    constructor(productInterface, productcategorieInterface, cartInterface, couponInterface, orderInterface, userInterface) {
+        this.productInterface = productInterface;
+        this.productcategorieInterface = productcategorieInterface;
+        this.cartInterface = cartInterface;
+        this.couponInterface = couponInterface;
+        this.orderInterface = orderInterface;
+        this.userInterface = userInterface;
     }
-
     async productsList() {
         const data = await this.productInterface.find().exec();
         let re = data;
@@ -48,8 +46,7 @@ export class ProductService {
                 "composition": re[i].composition,
                 "use": re[i].use,
                 "otherInformation": re[i].otherInfo
-
-            })
+            });
         }
         return {
             "responseCode": 200,
@@ -61,13 +58,10 @@ export class ProductService {
             },
         };
     }
-
     async deshboardProduct() {
         let product = await this.productInterface.find().exec();
         const categorie = await this.productcategorieInterface.find().exec();
-
         product = product.filter(x => x.topOffer === "1");
-
         let re = product;
         const cc = [];
         for (let i = 0; i < re.length; i++) {
@@ -87,8 +81,7 @@ export class ProductService {
                 "composition": re[i].composition,
                 "use": re[i].use,
                 "otherInformation": re[i].otherInfo
-
-            })
+            });
         }
         if (categorie) {
             let result = {
@@ -104,21 +97,16 @@ export class ProductService {
                         "https://mocial.com/banner-image3.jpeg"
                     ]
                 }
-            }
+            };
             return await result;
         }
     }
-
-
     async searchProduct(body) {
-
         let product = await this.productInterface.find().exec();
-
         if (body.search) {
             body.search = body.search.toLowerCase();
             product = product.filter(item => item.name.toLowerCase().indexOf(body.search) !== -1);
         }
-
         let result = {
             "responseCode": 200,
             "error": false,
@@ -126,19 +114,14 @@ export class ProductService {
             "data": {
                 "products": product,
             }
-        }
+        };
         return await result;
     }
-
-
     async categoriesDetail(body) {
-
         let product = await this.productInterface.find().exec();
         let categorie = await this.productcategorieInterface.find().exec();
-
         product = product.filter(x => x.caregoryId === body.categoryId);
         categorie = categorie.filter(x => x.caregoryId === body.categoryId);
-
         let re = product;
         const cc = [];
         for (let i = 0; i < re.length; i++) {
@@ -158,8 +141,7 @@ export class ProductService {
                 "composition": re[i].composition,
                 "use": re[i].use,
                 "otherInformation": re[i].otherInfo
-
-            })
+            });
         }
         let result = {
             "responseCode": 200,
@@ -169,10 +151,9 @@ export class ProductService {
                 "categoryId": body.categoryId,
                 "products": cc
             }
-        }
+        };
         return await result;
     }
-
     async madicineDetails(body) {
         let product = await this.productInterface.find().exec();
         let re = product;
@@ -194,7 +175,7 @@ export class ProductService {
             "composition": product[0].composition,
             "use": product[0].use,
             "otherInformation": product[0].use
-        }
+        };
         const cc = [];
         for (let i = 0; i < re.length; i++) {
             cc.push({
@@ -213,38 +194,36 @@ export class ProductService {
                 "composition": re[i].composition,
                 "use": re[i].use,
                 "otherInformation": re[i].otherInfo
-            })
+            });
         }
-
         let deatils = {
             productDeatils: productDeatils,
             "recommended": cc,
-            "faq": [{"key": "What isLupisafe Hand sanitizer is from ?", "value": "Lupisafe Hand sanitizer is from"}],
+            "faq": [{ "key": "What isLupisafe Hand sanitizer is from ?", "value": "Lupisafe Hand sanitizer is from" }],
             "customerCare": "The contents of this website are for informational purposes only and not intended to be a substitute for professional medical advice, diagnosis, or treatment. Please seek the advice of a physician or other qualified health provider with any questions you may have regarding a medical condition. Do not disregard professional medical advice or delay in seeking it because of something you have read on this website."
-        }
-
+        };
         let result = {
             "responseCode": 200,
             "error": false,
             "responseMessage": "product deatils",
             "data": deatils
-        }
+        };
         return await result;
     }
-
     async myCarts(body) {
         let discount = 0;
         let user = await this.userInterface.find().exec();
-        let userId = user.filter(key => key.accessToken === body.id)
+        let userId = user.filter(key => key.accessToken === body.id);
         let cartsList = await this.cartInterface.find().exec();
         let product = await this.productInterface.find().exec();
         if (body.promoCode) {
             if (body.promoCode === 'ABCDE') {
-                discount = 250
+                discount = 250;
                 let couponList = await this.couponInterface.find().exec();
                 console.log('++' + couponList);
-            } else if (body.promoCode === 'FIRST100') {
-                discount = 100
+            }
+            else if (body.promoCode === 'FIRST100') {
+                discount = 100;
             }
         }
         cartsList = cartsList.filter(x => x.userId === userId[0].userId.toString());
@@ -258,23 +237,17 @@ export class ProductService {
                 "data": cartsList[i]._id,
                 "qty": cartsList[i].qty,
                 "product": co[0]
-            })
+            });
         }
-        let paymentvalue: number = 0;
-        //
-
+        let paymentvalue = 0;
         let po = com;
         console.log(com);
-
         for (let i = 0; i < po.length; i++) {
             paymentvalue = paymentvalue + Number(po[i].product.grandTotal);
         }
-
-
         let deliveryCharge = 25;
-        let result
+        let result;
         if (com.length > 0) {
-
             if (discount === 0) {
                 result = {
                     "responseCode": 200,
@@ -297,8 +270,9 @@ export class ProductService {
                             }
                         ]
                     }
-                }
-            } else {
+                };
+            }
+            else {
                 result = {
                     "responseCode": 200,
                     "error": false,
@@ -324,9 +298,10 @@ export class ProductService {
                             }
                         ]
                     }
-                }
+                };
             }
-        } else {
+        }
+        else {
             result = {
                 "responseCode": 200,
                 "error": false,
@@ -335,19 +310,16 @@ export class ProductService {
                     "carts": [],
                     "paymentDetails": []
                 }
-            }
+            };
         }
         return await result;
     }
-
-
     async addCarts(header, body) {
         let user = await this.userInterface.find().exec();
-        let userId = user.filter(key => key.accessToken === header.id)
+        let userId = user.filter(key => key.accessToken === header.id);
         const cart = new this.cartInterface(body);
         cart.userId = userId[0].userId.toString();
         return await cart.save().then((data) => {
-            // let cartsList = this.cartInterface.find().exec();
             return {
                 "responseCode": 200,
                 "error": false,
@@ -355,45 +327,11 @@ export class ProductService {
                 response: [],
             };
         });
-        // let result = {
-        //     "responseCode": 200,
-        //     "error": false,
-        //     "responseMessage": "carts updated",
-        //     "data": {
-        //         "carts": [
-        //             {
-        //                 "productImg": "path",
-        //                 "productId": "1",
-        //                 "name": "Fingertip Pulse Oximeter",
-        //                 "price": "408",
-        //                 "currency": "inr",
-        //                 "offerPerchtage": 10,
-        //                 "offer": "10% off",
-        //                 "grandTotal": "408"
-        //             },
-        //             {
-        //                 "productImg": "path",
-        //                 "productId": "1",
-        //                 "name": "Fingertip Pulse Oximeter",
-        //                 "price": "408",
-        //                 "currency": "inr",
-        //                 "offerPerchtage": 10,
-        //                 "offer": "10% off",
-        //                 "grandTotal": "408"
-        //             }
-        //         ]
-        //     }
-        // }
-        // return await result;
     }
-
-
     async removecart(body) {
-
-        var query = {'_id': body.cartId};
+        var query = { '_id': body.cartId };
         this.cartInterface.deleteOne(query => {
         });
-
         const result1 = {
             "responseCode": 200,
             "error": false,
@@ -402,62 +340,49 @@ export class ProductService {
         };
         return result1;
     }
-
-
     async removePromoCode(body) {
         let result = {
             "responseCode": 200,
             "error": false,
             "responseMessage": "promo code removed",
             "data": []
-        }
+        };
         return await result;
     }
-
-
     async applyPromoCode(body) {
         let couponList = await this.couponInterface.find().exec();
         console.log('++' + couponList);
-
         let result = {
             "responseCode": 200,
             "error": false,
             "responseMessage": "promo code applied",
             "data": couponList
-        }
+        };
         return await result;
     }
-
-
     async paymentDetails(body) {
         let cartsList = await this.cartInterface.find().exec();
         let product = await this.productInterface.find().exec();
         cartsList = cartsList.filter(x => x.userId === body.userId);
-
         let com = [];
-        console.log(cartsList)
+        console.log(cartsList);
         let co;
         for (let i = 0; i < cartsList.length; i++) {
             co = product.filter(x => x.productId === cartsList[i].productId);
             com.push({
                 "data": cartsList[i]._id,
                 "product": co[0]
-            })
+            });
         }
-
-        let paymentvalue: number = 0;
-        //
-
+        let paymentvalue = 0;
         let po = com;
         for (let i = 0; i < po.length; i++) {
             paymentvalue = paymentvalue + Number(po[i].product.grandTotal);
         }
-
         if (body.promoCode) {
             let couponList = await this.couponInterface.find().exec();
             console.log(couponList);
         }
-
         let deliveryCharge = 25;
         let discount = 92;
         let result = {
@@ -484,12 +409,9 @@ export class ProductService {
                     }
                 ]
             }
-        }
+        };
         return await result;
-
-
     }
-
     async orderProduct(header, body) {
         const order = new this.orderInterface(body);
         const user = await this.userInterface.find().exec();
@@ -498,11 +420,11 @@ export class ProductService {
         const idCheck = user.filter(x => x.accessToken === header.id);
         console.log("________" + idCheck);
         order.userId = idCheck[0].userId;
-        let dateTime = new Date()
+        let dateTime = new Date();
         order.date = dateTime.toDateString();
         order.orderStatus = "1";
         return await order.save().then((data) => {
-            console.log(data)
+            console.log(data);
             return {
                 "responseCode": 200,
                 "error": false,
@@ -511,13 +433,12 @@ export class ProductService {
             };
         });
     }
-
     async productcategorie(body) {
         const order = new this.productcategorieInterface(body);
         let list = await this.productcategorieInterface.find().exec();
         order.categoryId = "cate0" + Math.floor(list.length + 1);
         return await order.save().then((data) => {
-            console.log(data)
+            console.log(data);
             return {
                 "responseCode": 200,
                 "error": false,
@@ -526,7 +447,6 @@ export class ProductService {
             };
         });
     }
-
     async productcategorieList() {
         let list = await this.productcategorieInterface.find().exec();
         return {
@@ -536,5 +456,21 @@ export class ProductService {
             response: list,
         };
     }
-
-}
+};
+ProductService = __decorate([
+    common_1.Injectable(),
+    __param(0, mongoose_1.InjectModel('product')),
+    __param(1, mongoose_1.InjectModel('product_categorie')),
+    __param(2, mongoose_1.InjectModel('cart')),
+    __param(3, mongoose_1.InjectModel('promo_code')),
+    __param(4, mongoose_1.InjectModel('order')),
+    __param(5, mongoose_1.InjectModel('user')),
+    __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
+        mongoose_2.Model,
+        mongoose_2.Model,
+        mongoose_2.Model,
+        mongoose_2.Model])
+], ProductService);
+exports.ProductService = ProductService;
+//# sourceMappingURL=product.service.js.map

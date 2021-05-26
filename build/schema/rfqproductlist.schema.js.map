@@ -1,0 +1,1 @@
+{"version":3,"file":"rfqproductlist.schema.js","sourceRoot":"","sources":["../../src/schema/rfqproductlist.schema.ts"],"names":[],"mappings":";;;AAAA,qCAAqC;AACrC,IAAI,aAAa,GAAG,OAAO,CAAC,yBAAyB,CAAC,CAAC;AAE1C,QAAA,oBAAoB,GAAG,IAAI,QAAQ,CAAC,MAAM,CAAC;IACpD,MAAM,EAAE,MAAM;IACd,KAAK,EAAE,MAAM;IACb,QAAQ,EAAE,KAAK;CAClB,CAAC,CAAC"}

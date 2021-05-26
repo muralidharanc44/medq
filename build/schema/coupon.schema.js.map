@@ -1,0 +1,1 @@
+{"version":3,"file":"coupon.schema.js","sourceRoot":"","sources":["../../src/schema/coupon.schema.ts"],"names":[],"mappings":";;;AAAA,qCAAqC;AAErC,IAAI,aAAa,GAAG,OAAO,CAAC,yBAAyB,CAAC,CAAC;AAE1C,QAAA,YAAY,GAAG,IAAI,QAAQ,CAAC,MAAM,CAAC;IAC5C,SAAS,EAAE,MAAM;IACjB,cAAc,EAAE,MAAM;IACtB,UAAU,EAAE,MAAM;CACrB,CAAC,CAAC"}

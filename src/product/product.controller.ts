@@ -36,14 +36,19 @@ export class ProductController {
         return await this.productService.applyPromoCode(body);
     }
 
+
     @Post('myCarts')
-    async myCarts(@Body() body) {
-        return await this.productService.myCarts(body);
+    async myCarts(@Req() req) {
+        const header = req.headers;
+        console.log(header);
+        return await this.productService.myCarts(header);
     }
 
     @Post('addCart')
-    async addCarts(@Body() body) {
-        return await this.productService.addCarts(body);
+    async addCarts(@Req() req, @Body() body) {
+        const header = req.headers;
+        console.log(header);
+        return await this.productService.addCarts(header, body);
     }
 
     @Post('removecart')
