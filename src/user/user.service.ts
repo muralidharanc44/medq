@@ -3,47 +3,67 @@ import {UserInterface} from '../interface/user.interface';
 import {Model} from 'mongoose';
 import {InjectModel} from '@nestjs/mongoose';
 import {InjectTwilio, TwilioClient} from "nestjs-twilio";
+import {AddressInterface} from "../interface/address.interface";
+// import {jwt} from "twilio";
+// import jwt from 'jsonwebtoken'
 
 const TokenGenerator = require('uuid-token-generator');
+const nodemailer = require("nodemailer");
+var jwt = require('jsonwebtoken');
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectModel('user')
         private readonly userInterface: Model<UserInterface>,
+        @InjectModel('address')
+        private readonly addressInterface: Model<AddressInterface>,
         @InjectTwilio() private readonly client: TwilioClient
     ) {
+    }
+
+    async adminSignup(body) {
+
     }
 
     async createUser(body) {
         const user = new this.userInterface(body);
         const data = await this.userInterface.find().exec();
         const tokgen = new TokenGenerator(); // Default is a 128-bit token encoded in base58
-        user.access_token = tokgen.generate();
+
+        user.accessToken = tokgen.generate();
         user.userId = data.length + 1;
         console.log(user);
         const phoneCheck = data.filter(x => x.phone === user.phone);
         if (phoneCheck.length != 0) {
             return {
-                responseCode: '0',
-                responseMessage: 'phone number already there',
+                responseCode: 400,
+                "error": true,
+                responseMessage: 'phone number already exist',
                 response: [],
             };
         } else {
+            const medq_token = jwt.sign({userId: user._id}, "sdfsdfsdfsfsfsdfsdfsdfsdfsfd", {expiresIn: '7d'})
+
+            user.accessToken = medq_token;
+            user.status = 1;
             return await user.save().then((data) => {
+
+                // const medq_token = jwt.sign({ userId: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'})
                 let res = {
                     "userName": data.userName,
                     "userId": data.userId,
                     "phone": data.phone,
                     "password": data.password,
-                    "email": data.password,
+                    "email": data.email,
                     "pushNotificationToken": data.pushNotificationToken,
                     "deviceOs": data.deviceOs,
                     "deviceName": data.deviceName,
                     "deviceOsVersion": data.deviceOsVersion,
                     "deviceBrand": data.deviceBrand,
                     "buildVersion": data.buildVersion,
-                    "accessToken": data.access_token,
+                    "accessToken": medq_token,
+                    "jwtToken": medq_token
                 }
                 return {
                     "responseCode": 200,
@@ -84,16 +104,37 @@ export class UserService {
         console.log(value)
         if (value.length === 0) {
             return {
-                responseCode: '0',
-                responseMessage: 'login creditional not there',
+                responseCode: 400,
+                error: true,
+                responseMessage: 'Phone Number is not exist',
+                response: [],
+            };
+        }
+        if (body.password != value[0].password) {
+
+            return {
+                responseCode: 400,
+                error: true,
+                responseMessage: 'Wrong password, Try Again!!',
                 response: [],
             };
         }
         if (value.length != 0) {
+
+            value[0].accessToken = jwt.sign({userId: user._id}, "sdfsdfsdfsfsfsdfsdfsdfsdfsfd", {expiresIn: '7d'});
+            var query = {'userId': value[0].userId};
+            console.log(value[0].accessToken)
+            await this.userInterface.updateOne(query, value[0], {upsert: true}, function (err, doc) {
+                if (err) return {
+                    error: err
+                };
+            });
             let res = {
                 "userName": value[0].userName,
                 "userId": value[0].userId,
+                "accessToken": value[0].accessToken,
                 "phone": value[0].phone,
+                "email": value[0].email,
                 "password": value[0].password,
                 "pushNotificationToken": value[0].pushNotificationToken,
                 "deviceOs": value[0].deviceOs,
@@ -101,7 +142,7 @@ export class UserService {
                 "deviceOsVersion": value[0].deviceOsVersion,
                 "deviceBrand": value[0].deviceBrand,
                 "buildVersion": value[0].buildVersion,
-                "accessToken": value[0].access_token,
+
             }
             return {
                 "responseCode": 200,
@@ -230,14 +271,46 @@ export class UserService {
         //     };
         // });
 
-
-        let result = {
-            "responseCode": 200,
-            "error": false,
-            "responseMessage": "New Password Sucessfully Updated",
-            "data": []
+        if (body.secretKey != "abcdefg") {
+            return {
+                "responseCode": 200,
+                "error": true,
+                responseMessage: 'secretKey wrong',
+                response: [],
+            };
         }
-        return await result;
+        const data = await this.userInterface.find().exec();
+
+        const phoneCheck = data.filter(x => x.phone.toString() === body.phone);
+        if (phoneCheck.length === 0) {
+            return {
+                "responseCode": 200,
+                "error": true,
+                "responseMessage": "phone number not exist",
+                "data": []
+            }
+        } else {
+            var query = {'phone': body.phone};
+            this.userInterface.updateOne(query, body, {upsert: true}, function (err, doc) {
+                if (err) return {
+                    error: err
+                };
+                return {
+                    "responseCode": 200,
+                    "error": false,
+                    responseMessage: 'Password Updated sucessfully',
+                    response: [],
+                };
+            });
+
+            return {
+                "responseCode": 200,
+                "error": false,
+                responseMessage: 'Password Updated sucessfully',
+                response: [],
+            };
+        }
+
 
     }
 
@@ -245,7 +318,7 @@ export class UserService {
     async usersList() {
         const data = await this.userInterface.find().exec();
         return {
-            responseCode: '1',
+            responseCode: 200,
             responseMessage: 'success',
             response: {
                 'users': data,
@@ -268,14 +341,70 @@ export class UserService {
 
     async forgotPassword(body) {
 
-        let result = {
-            "responseCode": 200,
-            "error": false,
-            "responseMessage": "sent otp",
-            "data": []
+        // Create a SMTP transporter object
+        // let transporter = nodemailer.createTransport({
+        //     service: 'gmail',
+        //     auth: {
+        //         user: 'muralidharanccse44@gmail.com',
+        //         pass: '9790092200'
+        //     }
+        // });
+        //
+        // // Message object
+        // let message = {
+        //     from: 'murali <muralidharanc849@gmail.com>',
+        //
+        //     // Comma separated list of recipients
+        //     to: body.email,
+        //
+        //     // Subject of the message
+        //     subject: 'Forgot Password in mocial ✔',
+        //
+        //     // plaintext body
+        //     text: 'Your Password is ' + body.password,
+        //
+        //
+        // };
+        //
+        // let info = await transporter.sendMail(message);
+        // console.log('Message sent successfully as %s', nodemailer.getTestMessageUrl(info));
+        //
+        //
+        // if (info) {
+        //     var query = {
+        //         "email": body.email,
+        //         "password": body.password
+        //     };
+        //
+        //     return this.userInterface.updateOne(query, body, {upsert: true}, function (err, doc) {
+        //         if (err) return {
+        //             error: err
+        //         };
+        //
+        //     });
+        // }
+        const data = await this.userInterface.find().exec();
+
+        const phoneCheck = data.filter(x => x.phone.toString() == body.phone);
+        var result = {};
+        if (phoneCheck.length === 0) {
+            result = {
+                "responseCode": 200,
+                "error": true,
+                "responseMessage": "phone number not exist",
+                "data": []
+            }
+        } else {
+            result = {
+                "responseCode": 200,
+                "error": false,
+                "responseMessage": "sent otp successfully",
+                "data": [
+                    {"otp": "1234"}
+                ]
+            }
         }
         return await result;
-
     }
 
     async verifyOtp(body) {
@@ -286,7 +415,9 @@ export class UserService {
                 "responseCode": 200,
                 "error": false,
                 "responseMessage": "correct otp",
-                "data": []
+                "data": {
+                    "secretKey": "abcdefg",
+                }
             }
         } else {
             result = {
@@ -301,10 +432,12 @@ export class UserService {
     }
 
     async deshboardProduct(body) {
+
+
         let result = {
             "responseCode": 200,
             "error": false,
-            "responseMessage": "sucessfully updated password",
+            "responseMessage": "sucessfully updated",
             "data": {
                 "location": [
                     {
@@ -329,11 +462,6 @@ export class UserService {
                     {
                         "caregoryId": "2",
                         "categoryName": "Baby Needs",
-                        "img": "imagePath"
-                    },
-                    {
-                        "caregoryId": "1",
-                        "categoryName": "Pharmacy",
                         "img": "imagePath"
                     },
                     {
@@ -813,142 +941,107 @@ export class UserService {
         return await result;
     }
 
+
     async listAddress(body) {
-        let result = {
-            "responseCode": 200,
-            "error": false,
-            "responseMessage": "cart removed",
-            "data": [
-                {
-                    "locationId": "1",
-                    "address": "mklnkln iohkl",
-                    "landmark": "school",
-                    "city": "salem",
-                    "state": "tamil nadu",
-                    "pincode": "63609",
-                    "defalutAddress": 1,
-                    "mobileNo": "97903227272"
-                },
-                {
-                    "locationId": "2",
-                    "address": "mklnkln iohkl",
-                    "landmark": "school",
-                    "city": "salem",
-                    "defalutAddress": 0,
-                    "state": "tamil nadu",
-                    "pincode": "63609",
-                    "mobileNo": "97903227272"
-                }
-            ]
-        }
-        return await result;
+        console.log(body)
+        const user = await this.userInterface.find().exec();
+        const idCheck = user.filter(x => x.accessToken === body.id);
+        console.log(idCheck[0])
+        const data = await this.addressInterface.find().exec();
+        const address = data.filter(x => x.userId === idCheck[0].userId.toString());
+        return {
+            responseCode: 200,
+            responseMessage: 'success',
+            error: 'false',
+            response: {
+                'address': address,
+                address_count: address.length
+            },
+        };
+    }
+
+    async addAddress(header, body) {
+        const user = await this.userInterface.find().exec();
+        const idCheck = user.filter(x => x.accessToken === header.id);
+        body.userId = idCheck[0].userId;
+        const address = new this.addressInterface(body);
+        return await address.save().then((data) => {
+            return {
+                "responseCode": 200,
+                "error": false,
+                responseMessage: 'Address added sucessfully',
+                response: data,
+            };
+        });
+
     }
 
     async makeAddressPrimary(body) {
-        let result = {
+        var query = {'_id': body.addressId};
+        console.log(query)
+        console.log(body)
+        let aa = {
+            "primaryAddress": body.primaryAddress
+        }
+        this.addressInterface.updateOne(query, aa, {upsert: true}, function (err, doc) {
+
+            if (err) return {
+                error: err,
+            };
+
+        });
+        return {
             "responseCode": 200,
             "error": false,
-            "responseMessage": "Defaukt loc updated",
-            "data": [
-                {
-                    "locationId": "1",
-                    "address": "mklnkln iohkl",
-                    "landmark": "school",
-                    "city": "salem",
-                    "state": "tamil nadu",
-                    "pincode": "63609",
-                    "defalutAddress": 0,
-                    "mobileNo": "97903227272"
-                },
-                {
-                    "locationId": "2",
-                    "address": "mklnkln iohkl",
-                    "landmark": "school",
-                    "city": "salem",
-                    "defalutAddress": 1,
-                    "state": "tamil nadu",
-                    "pincode": "63609",
-                    "mobileNo": "97903227272"
-                }
-            ]
-        }
-        return await result;
+            responseMessage: 'Address added primary',
+            response: aa,
+        };
     }
 
-
     async removeAddress(body) {
-        let result = {
+
+        var query = {'_id': body.id};
+        this.addressInterface.deleteOne(query => {
+
+        });
+
+        return {
             "responseCode": 200,
             "error": false,
             "responseMessage": "address removed",
-            "data": [
-                {
-                    "locationId": "1",
-                    "address": "mklnkln iohkl",
-                    "landmark": "school",
-                    "defalutAddress": 1,
-                    "city": "salem",
-                    "state": "tamil nadu",
-                    "pincode": "63609",
-                    "mobileNo": "97903227272"
-                }
-            ]
-        }
-        return await result;
-    }
-
-    async addAddress(body) {
-        let result = {
-            "responseCode": 200,
-            "error": false,
-            "responseMessage": "Address added",
-            "data": [
-                {
-                    "locationId": "1",
-                    "address": "mklnkln iohkl",
-                    "landmark": "school",
-                    "city": "salem",
-                    "state": "tamil nadu",
-                    "pincode": "63609",
-                    "defalutAddress": 1,
-                    "mobileNo": "97903227272"
-                },
-                {
-                    "locationId": "2",
-                    "address": "mklnkln iohkl",
-                    "landmark": "school",
-                    "city": "salem",
-                    "state": "tamil nadu",
-                    "pincode": "63609",
-                    "defalutAddress": 0,
-                    "mobileNo": "97903227272"
-                }
-            ]
-        }
-        return await result;
+            "data": []
+        };
     }
 
     async UpdateAddress(body) {
-        let result = {
+        var query = {'_id': body.addressId};
+        console.log(query)
+        console.log(body)
+        let aa = {
+            "address": body.address,
+            "ContactName": body.ContactName,
+            "landmark": body.landmark,
+            "city": body.city,
+            "state": body.state,
+            "pincode": body.pincode,
+            "country": body.country,
+            "primaryAddress": body.primaryAddress,
+            "mobileNumber": body.mobileNumber
+        }
+        this.addressInterface.updateOne(query, aa, {upsert: true}, function (err, doc) {
+
+            if (err) return {
+                error: err,
+            };
+
+        });
+        return {
             "responseCode": 200,
             "error": false,
-            "responseMessage": "Address updated",
-            "data": [
-                {
-                    "locationId": "2",
-                    "address": "mklnkln iohkl",
-                    "landmark": "school",
-                    "city": "salem",
-                    "state": "tamil nadu",
-                    "pincode": "63609",
-                    "defalutAddress": 1,
-                    "mobileNo": "97903227272"
-                },
-            ]
-        }
-        return await result;
+            responseMessage: 'Address updated sucessfully',
+            response: aa,
+        };
     }
-
 
 
 }

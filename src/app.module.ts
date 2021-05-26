@@ -7,6 +7,9 @@ import {MongooseModule} from '@nestjs/mongoose';
 import {TwilioModule} from "nestjs-twilio";
 import { CareerController } from './career/career.controller';
 import {CareerModule} from "./career/career.module";
+import { ProductModule } from './product/product.module';
+import { RfqModule } from './rfq/rfq.module';
+import { AdminPanelModule } from './admin-panel/admin-panel.module';
 
 @Module({
   imports: [
@@ -28,6 +31,9 @@ import {CareerModule} from "./career/career.module";
       accountSid: process.env.TWILIO_ACCOUNT_SID,
       authToken: process.env.TWILIO_AUTH_TOKEN,
     }),
+    ProductModule,
+    RfqModule,
+    AdminPanelModule,
   ],
 
     controllers: [AppController],

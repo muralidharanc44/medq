@@ -2,15 +2,10 @@ import * as mongoose from 'mongoose';
 
 var autoIncrement = require('mongoose-auto-increment');
 
-export const careerSchema = new mongoose.Schema({
-    jobCode: String,
-    title: String,
-    description: String,
-    exp: String,
-    designation: String,
-    addBy: String,
-    state: String,
-    country: String,
+export const couponSchema = new mongoose.Schema({
+    promoCode: String,
+    discountAmount: String,
+    couponType: String,
 });
 
 

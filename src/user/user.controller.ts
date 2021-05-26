@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Param, Post, Put} from '@nestjs/common';
+import {Body, Controller, Get, Param, Post, Put, Req} from '@nestjs/common';
 import {UserService} from './user.service';
 
 @Controller('user')
@@ -13,6 +13,11 @@ export class UserController {
         return await this.userService.createUser(body);
     }
 
+    @Post('adminSignup')
+    async adminSignup(@Body() body) {
+        return await this.userService.adminSignup(body);
+    }
+
     @Post('login')
     async loginUser(@Body() body) {
         return await this.userService.loginUser(body);
@@ -23,7 +28,7 @@ export class UserController {
         return await this.userService.socialloginUser(body);
     }
 
-    @Get()
+    @Get('usersList')
     async usersList() {
         return await this.userService.usersList();
     }
@@ -128,9 +133,15 @@ export class UserController {
         return await this.userService.listinternetbanking();
     }
 
+    // @Post('listAddress')
+    // async listAddress(@Body() body) {
+    //     return await this.userService.listAddress(body);
+    // }
+
     @Post('listAddress')
-    async listAddress(@Body() body) {
-        return await this.userService.listAddress(body);
+    async listAddress(@Req() req) {
+        const header = req.headers;
+        return await this.userService.listAddress(header);
     }
 
     @Post('makeAddressPrimary')
@@ -144,8 +155,9 @@ export class UserController {
     }
 
     @Post('addAddress')
-    async addAddress(@Body() body) {
-        return await this.userService.addAddress(body);
+    async addAddress(@Req() req, @Body() body) {
+        const header = req.headers;
+        return await this.userService.addAddress(header, body);
     }
 
     @Post('UpdateAddress')

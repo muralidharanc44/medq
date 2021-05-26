@@ -2,17 +2,18 @@ import * as mongoose from 'mongoose';
 
 var autoIncrement = require('mongoose-auto-increment');
 
-export const careerSchema = new mongoose.Schema({
-    jobCode: String,
-    title: String,
-    description: String,
-    exp: String,
-    designation: String,
-    addBy: String,
+export const addressSchema = new mongoose.Schema({
+    address: String,
+    landmark: String,
+    userId: String,
+    city: String,
     state: String,
+    pincode: String,
     country: String,
+    mobileNumber: Number,
+    primaryAddress: Boolean,
+    contactName: String,
 });
-
 
 
 // export const careercategorySchema = new mongoose.Schema({

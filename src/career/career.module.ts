@@ -3,6 +3,7 @@ import {CareerService} from "./career.service";
 import {MongooseModule} from "@nestjs/mongoose";
 import {CareerController} from "./career.controller";
 import {careerSchema} from "../schema/career.schema";
+import {jobcategorySchema, locationSchema} from "../schema/job-categories.schema";
 
 @Module({
   imports: [
@@ -11,6 +12,14 @@ import {careerSchema} from "../schema/career.schema";
         name: 'career',
         schema: careerSchema,
       },
+      {
+        name: 'job_category',
+        schema: jobcategorySchema,
+      },
+      {
+        name: 'location',
+        schema: locationSchema,
+      }
     ]),
   ],
   controllers: [CareerController],

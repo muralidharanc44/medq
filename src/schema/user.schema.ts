@@ -7,6 +7,7 @@ export const userSchema = new mongoose.Schema({
   password: String,
   phone: Number,
   accessToken: String,
+  email: String,
   pushNotificationToken: String,
   role: String,
   deviceOs: String,
@@ -17,6 +18,7 @@ export const userSchema = new mongoose.Schema({
   loginType: Number,
   socialToken: String,
   otpCode: Number,
+  status: Number,
 });
 
 // userSchema.plugin(autoIncrement.plugin, 'user_id');

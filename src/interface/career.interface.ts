@@ -8,5 +8,9 @@ export interface CareerInterface extends mongoose.Document {
     exp : string;
     designation : string;
     addBy : string;
-    location : string;
+    country : string;
+    state : string;
 }
+// export interface CareerCategoriesInterface extends mongoose.Document {
+//     jobcategory : string
+// }
